@@ -57,6 +57,30 @@ const section3Ref = ref(null);
 const isSection3Visible = ref(false);
 let section3Observer = null;
 
+// Section 4 Inclusion List animation states
+const inc1Ref = ref(null);
+const inc2Ref = ref(null);
+const inc3Ref = ref(null);
+const isInc1Visible = ref(false);
+const isInc2Visible = ref(false);
+const isInc3Visible = ref(false);
+
+// Section 5 About Us animation state
+const aboutRef = ref(null);
+const isAboutVisible = ref(false);
+
+// Section 6 Ideas Turn Into Reality animation state
+const section6Ref = ref(null);
+const isSection6Visible = ref(false);
+
+// Section 7 Get in touch & Section 8 Footer animation states
+const contactRef = ref(null);
+const isContactVisible = ref(false);
+const footerRef = ref(null);
+const isFooterVisible = ref(false);
+
+let additionalObservers = [];
+
 watch(() => [route.path, route.hash], handleRouteScroll);
 
 // Gallery state for Item 3 (4 images total, dual-image side-by-side with 0 gap)
@@ -263,12 +287,42 @@ onMounted(() => {
       );
       section3Observer.observe(section3Ref.value);
     }
+
+    // Section 4 Inclusion List Observers
+    const observeAdditionalElement = (elRef, visibleRef) => {
+      if (!elRef.value) return;
+      const obs = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            visibleRef.value = true;
+          }
+        },
+        { threshold: 0.15 }
+      );
+      obs.observe(elRef.value);
+      additionalObservers.push(obs);
+    };
+
+    observeAdditionalElement(inc1Ref, isInc1Visible);
+    observeAdditionalElement(inc2Ref, isInc2Visible);
+    observeAdditionalElement(inc3Ref, isInc3Visible);
+    observeAdditionalElement(aboutRef, isAboutVisible);
+    observeAdditionalElement(section6Ref, isSection6Visible);
+    observeAdditionalElement(contactRef, isContactVisible);
+    observeAdditionalElement(footerRef, isFooterVisible);
   } else {
     isHeroVisible.value = true;
     isHouse1Visible.value = true;
     isHouse2Visible.value = true;
     isHouse3Visible.value = true;
     isSection3Visible.value = true;
+    isInc1Visible.value = true;
+    isInc2Visible.value = true;
+    isInc3Visible.value = true;
+    isAboutVisible.value = true;
+    isSection6Visible.value = true;
+    isContactVisible.value = true;
+    isFooterVisible.value = true;
   }
 });
 
@@ -282,6 +336,8 @@ onUnmounted(() => {
   }
   section2Observers.forEach((obs) => obs.disconnect());
   section2Observers = [];
+  additionalObservers.forEach((obs) => obs.disconnect());
+  additionalObservers = [];
   document.body.style.overflow = "";
 });
 </script>
@@ -504,10 +560,14 @@ onUnmounted(() => {
 
       <!-- Item 1: Text on Left + 2 Square Images on Right (Original from whole-page.png) -->
       <div
+        ref="inc1Ref"
         class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center mb-24 sm:mb-28"
       >
         <!-- Left Text Block -->
-        <div class="lg:col-span-4 flex flex-col items-start">
+        <div
+          class="lg:col-span-4 flex flex-col items-start anim-slide-left"
+          :class="{ 'anim-active': isInc1Visible }"
+        >
           <p
             class="text-[12px] sm:text-[13px] text-neutral-600 font-medium tracking-wide mb-3"
           >
@@ -530,7 +590,8 @@ onUnmounted(() => {
 
         <!-- Right 2 Images Grid -->
         <div
-          class="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8"
+          class="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 anim-house-scale-right"
+          :class="{ 'anim-active': isInc1Visible }"
         >
           <div
             class="w-full aspect-square overflow-hidden bg-neutral-100 rounded-none"
@@ -555,11 +616,13 @@ onUnmounted(() => {
 
       <!-- Item 2: Wide Image on Left + Text on Right (RIGHT-ALIGNED AS REQUESTED) -->
       <div
+        ref="inc2Ref"
         class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center mb-24 sm:mb-28"
       >
         <!-- Left Wide Image -->
         <div
-          class="lg:col-span-7 w-full h-[260px] sm:h-[320px] md:h-[360px] overflow-hidden bg-neutral-100 rounded-none"
+          class="lg:col-span-7 w-full h-[260px] sm:h-[320px] md:h-[360px] overflow-hidden bg-neutral-100 rounded-none anim-house-scale-left"
+          :class="{ 'anim-active': isInc2Visible }"
         >
           <img
             :src="bigHouseBg"
@@ -569,7 +632,10 @@ onUnmounted(() => {
         </div>
 
         <!-- Right Text Block: Right-aligned text & right-aligned button -->
-        <div class="lg:col-span-5 flex flex-col items-end text-right lg:pl-6">
+        <div
+          class="lg:col-span-5 flex flex-col items-end text-right lg:pl-6 anim-slide-right"
+          :class="{ 'anim-active': isInc2Visible }"
+        >
           <p
             class="text-[12px] sm:text-[13px] text-neutral-600 font-medium tracking-wide mb-3"
           >
@@ -592,9 +658,15 @@ onUnmounted(() => {
       </div>
 
       <!-- Item 3: Dual-Image 0-Gap Presentation (Smooth Scale Left Big / Right Big, items-start text lock, click to expand) -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+      <div
+        ref="inc3Ref"
+        class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start"
+      >
         <!-- Left Text Block -->
-        <div class="lg:col-span-4 flex flex-col items-start">
+        <div
+          class="lg:col-span-4 flex flex-col items-start anim-slide-left"
+          :class="{ 'anim-active': isInc3Visible }"
+        >
           <p
             class="text-[12px] sm:text-[13px] text-neutral-600 font-medium tracking-wide mb-3"
           >
@@ -675,7 +747,8 @@ onUnmounted(() => {
 
         <!-- Right 2 Visible Images Container (Outer wrapper preserves fixed origin aspect ratio, preventing height changes) -->
         <div
-          class="lg:col-span-8 relative w-full aspect-[4/3] sm:aspect-[16/11] lg:aspect-[16/10] overflow-hidden select-none"
+          class="lg:col-span-8 relative w-full aspect-[4/3] sm:aspect-[16/11] lg:aspect-[16/10] overflow-hidden select-none anim-house-scale-right"
+          :class="{ 'anim-active': isInc3Visible }"
         >
           <div
             class="absolute inset-0 w-full h-full flex items-center justify-start gap-0 select-none overflow-hidden"
@@ -775,6 +848,7 @@ onUnmounted(() => {
     <!-- 5. Section 5: "About Us" Banner (Matching whole-page.png) -->
     <section
       id="about"
+      ref="aboutRef"
       class="w-full max-w-[1240px] mt-24 sm:mt-32 px-4 sm:px-6 lg:px-8 scroll-mt-24"
     >
       <!-- Section Big Title: "About Us" with clean underline accent -->
@@ -793,15 +867,18 @@ onUnmounted(() => {
         <img
           :src="bigHouseBg"
           alt="About Us Villa"
-          class="absolute inset-0 w-full h-full object-cover object-center select-none"
+          class="absolute inset-0 w-full h-full object-cover object-center select-none anim-banner-bg"
+          :class="{ 'anim-active': isAboutVisible }"
         />
         <div
-          class="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-transparent"
+          class="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-transparent anim-fade-overlay"
+          :class="{ 'anim-active': isAboutVisible }"
         ></div>
 
         <!-- Overlaid Content -->
         <div
-          class="relative z-10 px-6 sm:px-12 lg:px-16 max-w-[700px] flex flex-col items-start"
+          class="relative z-10 px-6 sm:px-12 lg:px-16 max-w-[700px] flex flex-col items-start anim-slide-left"
+          :class="{ 'anim-active': isAboutVisible }"
         >
           <p
             class="text-[12px] sm:text-[13px] text-white/90 font-medium tracking-wide mb-3"
@@ -826,9 +903,15 @@ onUnmounted(() => {
     </section>
 
     <!-- 6. Section 6: "Ideas Turn Into Reality" (Matching whole-page.png layout) -->
-    <section class="w-full max-w-[1240px] mt-24 sm:mt-32 px-4 sm:px-6 lg:px-8">
+    <section
+      ref="section6Ref"
+      class="w-full max-w-[1240px] mt-24 sm:mt-32 px-4 sm:px-6 lg:px-8"
+    >
       <!-- Title -->
-      <div class="mb-12 sm:mb-14">
+      <div
+        class="mb-12 sm:mb-14 anim-slide-left"
+        :class="{ 'anim-active': isSection6Visible }"
+      >
         <h2
           class="text-3xl sm:text-4xl lg:text-[42px] font-normal text-neutral-900 font-['Newsreader',serif] tracking-tight pb-2 border-b border-neutral-300 inline-block"
         >
@@ -840,8 +923,10 @@ onUnmounted(() => {
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
         <!-- Left Column: 2 Stacked Photos (Top normal, bottom smaller) -->
         <div class="lg:col-span-4 flex flex-col gap-6 sm:gap-8 items-start">
+          <!-- Photo 1 (Appears 1st: starts small, expands smoothly into place) -->
           <div
-            class="w-full aspect-square overflow-hidden bg-neutral-100 rounded-none"
+            class="w-full aspect-square overflow-hidden bg-neutral-100 rounded-none anim-house-scale-left"
+            :class="{ 'anim-active': isSection6Visible }"
           >
             <img
               :src="houseBottomLeft"
@@ -849,9 +934,10 @@ onUnmounted(() => {
               class="w-full h-full object-cover hover:scale-105 transition-transform duration-500 rounded-none"
             />
           </div>
-          <!-- Bottom Left: Smaller Photo with subtle x-gap -->
+          <!-- Photo 2 (Appears 2nd: staggered delay-100) -->
           <div
-            class="w-[92%] sm:w-[90%] aspect-square overflow-hidden bg-neutral-100 rounded-none"
+            class="w-[92%] sm:w-[90%] aspect-square overflow-hidden bg-neutral-100 rounded-none anim-house-scale-left delay-100"
+            :class="{ 'anim-active': isSection6Visible }"
           >
             <img
               :src="houseTopLeft"
@@ -863,8 +949,10 @@ onUnmounted(() => {
 
         <!-- Center Column: Tall Hero Image with Description below -->
         <div class="lg:col-span-5 flex flex-col">
+          <!-- Photo 3 (Appears 3rd: staggered delay-200) -->
           <div
-            class="w-full aspect-[4/5] overflow-hidden bg-neutral-100 mb-5 rounded-none"
+            class="w-full aspect-[4/5] overflow-hidden bg-neutral-100 mb-5 rounded-none anim-house-scale-left delay-200"
+            :class="{ 'anim-active': isSection6Visible }"
           >
             <img
               :src="houseRight"
@@ -873,7 +961,8 @@ onUnmounted(() => {
             />
           </div>
           <p
-            class="text-[clamp(12px,1.2vw,13px)] leading-[1.7] text-neutral-600 font-normal font-['Rufina',serif]"
+            class="text-[clamp(12px,1.2vw,13px)] leading-[1.7] text-neutral-600 font-normal font-['Rufina',serif] anim-slide-left delay-300"
+            :class="{ 'anim-active': isSection6Visible }"
           >
             We adapt a uniquely personalised perspective to each project to
             deliver stunning spaces of optimal function. Renowned for our
@@ -884,8 +973,10 @@ onUnmounted(() => {
 
         <!-- Right Column: Single Smaller Square Photo -->
         <div class="lg:col-span-3 flex flex-col">
+          <!-- Photo 4 (Appears 4th: staggered delay-300) -->
           <div
-            class="w-full aspect-square overflow-hidden bg-neutral-100 rounded-none"
+            class="w-full aspect-square overflow-hidden bg-neutral-100 rounded-none anim-house-scale-right delay-300"
+            :class="{ 'anim-active': isSection6Visible }"
           >
             <img
               :src="houseBottomLeft"
@@ -900,10 +991,14 @@ onUnmounted(() => {
     <!-- 7. Section 7: "Get in touch" Form (Matching whole-page.png) -->
     <section
       id="contact"
+      ref="contactRef"
       class="w-full max-w-[1240px] mt-24 sm:mt-32 px-4 sm:px-6 lg:px-8 scroll-mt-24"
     >
       <!-- Title -->
-      <div class="mb-10 sm:mb-12">
+      <div
+        class="mb-10 sm:mb-12 anim-slide-left"
+        :class="{ 'anim-active': isContactVisible }"
+      >
         <h2
           class="text-3xl sm:text-4xl lg:text-[42px] font-normal text-neutral-900 font-['Newsreader',serif] tracking-tight pb-2 border-b border-neutral-300 inline-block"
         >
@@ -912,7 +1007,11 @@ onUnmounted(() => {
       </div>
 
       <!-- Form Inputs Grid -->
-      <form @submit.prevent="submitContactForm" class="w-full flex flex-col gap-6 max-w-[1100px]">
+      <form
+        @submit.prevent="submitContactForm"
+        class="w-full flex flex-col gap-6 max-w-[1100px] anim-slide-left delay-100"
+        :class="{ 'anim-active': isContactVisible }"
+      >
         <!-- Row 1: Email & User Name -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <input
@@ -981,17 +1080,20 @@ onUnmounted(() => {
 
     <!-- 8. Section 8: Footer (Matching whole-page.png & screenshot) -->
     <footer
+      ref="footerRef"
       class="relative w-full mt-24 sm:mt-32 overflow-hidden text-white min-h-[440px] sm:min-h-[480px] flex items-center justify-center rounded-none"
     >
       <!-- Background House - using bg-img.png -->
       <img
         :src="bigHouseBg"
         alt="Footer Modern Villa"
-        class="absolute inset-0 w-full h-full object-cover object-center select-none"
+        class="absolute inset-0 w-full h-full object-cover object-center select-none anim-banner-bg"
+        :class="{ 'anim-active': isFooterVisible }"
       />
       <!-- Top gradient overlay for text readability matching screenshot -->
       <div
-        class="absolute inset-0 bg-gradient-to-b from-black/85 via-black/50 to-transparent pointer-events-none"
+        class="absolute inset-0 bg-gradient-to-b from-black/85 via-black/50 to-transparent pointer-events-none anim-fade-overlay"
+        :class="{ 'anim-active': isFooterVisible }"
       ></div>
 
       <!-- Footer Content Container -->
@@ -999,7 +1101,10 @@ onUnmounted(() => {
         class="relative z-10 w-full max-w-[1240px] px-6 sm:px-10 lg:px-12 py-16 sm:py-20 grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-16 items-start"
       >
         <!-- Column 1: Brand Logo & Social Icons -->
-        <div class="md:col-span-5 flex flex-col items-start">
+        <div
+          class="md:col-span-5 flex flex-col items-start anim-slide-left"
+          :class="{ 'anim-active': isFooterVisible }"
+        >
           <button
             type="button"
             @click="scrollToTop"
@@ -1054,7 +1159,10 @@ onUnmounted(() => {
         </div>
 
         <!-- Column 2: Navigation Links -->
-        <div class="md:col-span-3 flex flex-col items-start">
+        <div
+          class="md:col-span-3 flex flex-col items-start anim-slide-left delay-100"
+          :class="{ 'anim-active': isFooterVisible }"
+        >
           <h3
             class="text-xl sm:text-2xl font-normal tracking-tight font-['Newsreader',serif] italic mb-4 text-white"
           >
@@ -1096,7 +1204,10 @@ onUnmounted(() => {
         </div>
 
         <!-- Column 3: Newsletter Signup -->
-        <div class="md:col-span-4 flex flex-col items-start">
+        <div
+          class="md:col-span-4 flex flex-col items-start anim-slide-right delay-200"
+          :class="{ 'anim-active': isFooterVisible }"
+        >
           <h3
             class="text-xl sm:text-2xl font-normal tracking-tight font-['Newsreader',serif] italic mb-3 text-white"
           >
@@ -1260,14 +1371,14 @@ onUnmounted(() => {
 .anim-slide-left {
   opacity: 0;
   transform: translate3d(-60px, 0, 0);
-  transition: opacity 2.2s cubic-bezier(0.16, 1, 0.3, 1), transform 2.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 3.2s cubic-bezier(0.16, 1, 0.3, 1), transform 3.2s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
 }
 
 .anim-slide-right {
   opacity: 0;
   transform: translate3d(60px, 0, 0);
-  transition: opacity 2.2s cubic-bezier(0.16, 1, 0.3, 1), transform 2.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 3.2s cubic-bezier(0.16, 1, 0.3, 1), transform 3.2s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
 }
 
@@ -1275,7 +1386,7 @@ onUnmounted(() => {
   opacity: 0;
   transform: translate3d(90px, 0, 0) scale(0.65);
   transform-origin: bottom right;
-  transition: opacity 3.6s cubic-bezier(0.16, 1, 0.3, 1), transform 3.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 4.5s cubic-bezier(0.16, 1, 0.3, 1), transform 4.5s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
 }
 
@@ -1283,7 +1394,7 @@ onUnmounted(() => {
   opacity: 0;
   transform: translate3d(-50px, 0, 0) scale(0.7);
   transform-origin: center;
-  transition: opacity 2.8s cubic-bezier(0.16, 1, 0.3, 1), transform 2.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 3.8s cubic-bezier(0.16, 1, 0.3, 1), transform 3.8s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
 }
 
@@ -1291,20 +1402,34 @@ onUnmounted(() => {
   opacity: 0;
   transform: translate3d(50px, 0, 0) scale(0.7);
   transform-origin: center;
-  transition: opacity 2.8s cubic-bezier(0.16, 1, 0.3, 1), transform 2.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 3.8s cubic-bezier(0.16, 1, 0.3, 1), transform 3.8s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
 }
 
 .anim-banner-bg {
   opacity: 0;
   transform: translate3d(200px, 0, 0) scale(1.06);
-  transition: opacity 2.6s cubic-bezier(0.16, 1, 0.3, 1), transform 2.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 3.6s cubic-bezier(0.16, 1, 0.3, 1), transform 3.6s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
 }
 
 .anim-fade-overlay {
   opacity: 0;
-  transition: opacity 2s ease;
+  transition: opacity 3s ease;
+}
+
+/* Stagger Delays for Slower, Distinct Sequential Entrance */
+.delay-100 {
+  transition-delay: 0.35s !important;
+}
+.delay-200 {
+  transition-delay: 0.7s !important;
+}
+.delay-300 {
+  transition-delay: 1.05s !important;
+}
+.delay-400 {
+  transition-delay: 1.4s !important;
 }
 
 /* Active State Trigger */
