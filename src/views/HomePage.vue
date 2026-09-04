@@ -31,6 +31,42 @@ const galleryImages = [
   },
 ];
 
+// Contact form state & direct Telegram send handler (no bot required)
+const contactForm = ref({
+  email: "",
+  name: "",
+  phone: "",
+  location: "",
+});
+const newsletterEmail = ref("");
+
+const submitContactForm = () => {
+  const email = contactForm.value.email.trim();
+  const name = contactForm.value.name.trim();
+  const phone = contactForm.value.phone.trim();
+  const location = contactForm.value.location.trim();
+
+  const lines = [
+    `Hi Bunroeun, I would like to get in touch:`,
+    `• Name: ${name || "(Not provided)"}`,
+    `• Email: ${email || "(Not provided)"}`,
+  ];
+  if (phone) lines.push(`• Phone: ${phone}`);
+  if (location) lines.push(`• Location: ${location}`);
+
+  const message = lines.join("\n");
+  const telegramUrl = `https://t.me/HasBunRoeun?text=${encodeURIComponent(message)}`;
+  window.open(telegramUrl, "_blank");
+};
+
+const submitNewsletter = () => {
+  const email = newsletterEmail.value.trim();
+  if (!email) return;
+  const message = `Hi Bunroeun, I would like to subscribe to your newsletter:\n• Email: ${email}`;
+  const telegramUrl = `https://t.me/HasBunRoeun?text=${encodeURIComponent(message)}`;
+  window.open(telegramUrl, "_blank");
+};
+
 // Item 3 State: Dual-image 0-gap presentation with smooth expand & non-looping navigation
 const pairIndex = ref(0); // 0 -> images 0 & 1, 1 -> images 2 & 3
 const activeSide = ref("left"); // 'left' (big on left) or 'right' (big on right)
@@ -730,17 +766,21 @@ onUnmounted(() => {
       </div>
 
       <!-- Form Inputs Grid -->
-      <form @submit.prevent class="w-full flex flex-col gap-6 max-w-[1100px]">
+      <form @submit.prevent="submitContactForm" class="w-full flex flex-col gap-6 max-w-[1100px]">
         <!-- Row 1: Email & User Name -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <input
+            v-model="contactForm.email"
             type="email"
             placeholder="Email..."
+            required
             class="w-full px-4 py-3 border border-neutral-400 bg-white text-neutral-800 text-sm focus:outline-none focus:border-black transition-colors rounded-none placeholder:text-neutral-500"
           />
           <input
+            v-model="contactForm.name"
             type="text"
             placeholder="User Name..."
+            required
             class="w-full px-4 py-3 border border-neutral-400 bg-white text-neutral-800 text-sm focus:outline-none focus:border-black transition-colors rounded-none placeholder:text-neutral-500"
           />
         </div>
@@ -748,11 +788,13 @@ onUnmounted(() => {
         <!-- Row 2: Phone Number & Location -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <input
+            v-model="contactForm.phone"
             type="tel"
             placeholder="Phone Number..."
             class="w-full px-4 py-3 border border-neutral-400 bg-white text-neutral-800 text-sm focus:outline-none focus:border-black transition-colors rounded-none placeholder:text-neutral-500"
           />
           <input
+            v-model="contactForm.location"
             type="text"
             placeholder="Location..."
             class="w-full px-4 py-3 border border-neutral-400 bg-white text-neutral-800 text-sm focus:outline-none focus:border-black transition-colors rounded-none placeholder:text-neutral-500"
@@ -773,19 +815,18 @@ onUnmounted(() => {
 
     <!-- 8. Section 8: Footer (Matching whole-page.png) -->
     <footer
-      class="relative w-full mt-24 sm:mt-32 overflow-hidden bg-neutral-950 text-white min-h-[420px] flex items-center justify-center rounded-none"
+      class="relative w-full mt-24 sm:mt-32 overflow-hidden text-white min-h-[420px] flex items-center justify-center rounded-none"
     >
-      <!-- Background House with Dark Dim Overlay -->
+      <!-- Background House - using bg-img.png only -->
       <img
         :src="bigHouseBg"
         alt="Footer Modern Villa"
-        class="absolute inset-0 w-full h-full object-cover object-center opacity-40 select-none"
+        class="absolute inset-0 w-full h-full object-cover object-center select-none"
       />
-      <div class="absolute inset-0 bg-black/60 backdrop-blur-[2px]"></div>
 
       <!-- Footer Content Container -->
       <div
-        class="relative z-10 w-full max-w-[1240px] px-6 sm:px-10 lg:px-12 py-16 grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-16 items-start"
+        class="relative z-10 w-full max-w-[1240px] px-6 sm:px-10 lg:px-12 py-16 grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-16 items-start drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]"
       >
         <!-- Column 1: Brand Logo & Social Icons -->
         <div class="md:col-span-5 flex flex-col items-start">
@@ -810,9 +851,9 @@ onUnmounted(() => {
                 />
               </svg>
             </a>
-            <!-- Telegram -->
+            <!-- Telegram Direct Contact -->
             <a
-              href="https://telegram.org"
+              href="https://t.me/HasBunRoeun"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Telegram"
@@ -883,12 +924,14 @@ onUnmounted(() => {
           </p>
           <!-- Email Input + Subscribe Button inline -->
           <form
-            @submit.prevent
+            @submit.prevent="submitNewsletter"
             class="w-full flex items-center bg-black/60 border border-neutral-600 rounded-none overflow-hidden"
           >
             <input
+              v-model="newsletterEmail"
               type="email"
               placeholder="Email..."
+              required
               class="w-full bg-transparent px-3.5 py-2.5 text-xs text-white placeholder:text-neutral-500 focus:outline-none rounded-none"
             />
             <button
