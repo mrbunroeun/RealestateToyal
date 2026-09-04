@@ -39,9 +39,13 @@ const selectedImageIndex = ref(null);
 const currentLeftImg = computed(() => galleryImages[pairIndex.value * 2]);
 const currentRightImg = computed(() => galleryImages[pairIndex.value * 2 + 1]);
 
-const canGoPrev = computed(() => pairIndex.value > 0 || activeSide.value === "right");
+const canGoPrev = computed(
+  () => pairIndex.value > 0 || activeSide.value === "right",
+);
 const canGoNext = computed(
-  () => pairIndex.value < Math.floor(galleryImages.length / 2) - 1 || activeSide.value === "left"
+  () =>
+    pairIndex.value < Math.floor(galleryImages.length / 2) - 1 ||
+    activeSide.value === "left",
 );
 
 const handleLeftClick = () => {
@@ -230,11 +234,11 @@ onUnmounted(() => {
           </p>
         </div>
 
-        <!-- Lower-Left House Image 3 -->
+        <!-- Lower-Left House Image 3 (Aligned with Section 3 container left edge) -->
         <div
-          class="w-full max-w-[1240px] mx-auto px-6 sm:px-12 lg:px-28 lg:mt-[-80px]"
+          class="w-full max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 lg:mt-[-80px]"
         >
-          <div class="flex flex-col max-w-[420px] mx-auto lg:mx-0">
+          <div class="flex flex-col w-full max-w-[420px] lg:w-[380px] xl:w-[420px]">
             <div
               class="w-full aspect-square overflow-hidden bg-neutral-100 mb-4 sm:mb-5"
             >
@@ -400,9 +404,7 @@ onUnmounted(() => {
       </div>
 
       <!-- Item 3: Dual-Image 0-Gap Presentation (Smooth Scale Left Big / Right Big, items-start text lock, click to expand) -->
-      <div
-        class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start"
-      >
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
         <!-- Left Text Block -->
         <div class="lg:col-span-4 flex flex-col items-start">
           <p
@@ -477,7 +479,8 @@ onUnmounted(() => {
               </svg>
             </button>
             <span class="text-xs text-neutral-600 font-medium pl-1 select-none">
-              Pair {{ pairIndex + 1 }} of {{ Math.ceil(galleryImages.length / 2) }}
+              Pair {{ pairIndex + 1 }} of
+              {{ Math.ceil(galleryImages.length / 2) }}
             </span>
           </div>
         </div>
@@ -524,7 +527,9 @@ onUnmounted(() => {
                   />
                 </svg>
               </div>
-              <span class="text-[12px] font-medium tracking-wide">Click to expand</span>
+              <span class="text-[12px] font-medium tracking-wide"
+                >Click to expand</span
+              >
             </div>
           </div>
 
@@ -566,7 +571,9 @@ onUnmounted(() => {
                   />
                 </svg>
               </div>
-              <span class="text-[12px] font-medium tracking-wide">Click to expand</span>
+              <span class="text-[12px] font-medium tracking-wide"
+                >Click to expand</span
+              >
             </div>
           </div>
         </div>
