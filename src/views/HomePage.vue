@@ -144,9 +144,11 @@ const submitContactForm = () => {
 const submitNewsletter = () => {
   const email = newsletterEmail.value.trim();
   if (!email) return;
-  const subject = encodeURIComponent("New Newsletter Subscription - RealestateToyal");
+  const subject = encodeURIComponent(
+    "New Newsletter Subscription - RealestateToyal",
+  );
   const body = encodeURIComponent(
-    `Hi Bunroeun,\n\nI would like to subscribe to the RealestateToyal newsletter with the following email address:\n\nSubscriber Email: ${email}`
+    `Hi Bunroeun,\n\nI would like to subscribe to the RealestateToyal newsletter with the following email address:\n\nSubscriber Email: ${email}`,
   );
   window.location.href = `mailto:bunroeunhas@gmail.com?subject=${subject}&body=${body}`;
 };
@@ -250,7 +252,7 @@ onMounted(() => {
           isHeroVisible.value = true;
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
     if (heroSectionRef.value) {
       heroObserver.observe(heroSectionRef.value);
@@ -265,7 +267,7 @@ onMounted(() => {
             visibleRef.value = true;
           }
         },
-        { threshold: 0.15 }
+        { threshold: 0.15 },
       );
       obs.observe(elRef.value);
       section2Observers.push(obs);
@@ -283,7 +285,7 @@ onMounted(() => {
             isSection3Visible.value = true;
           }
         },
-        { threshold: 0.15 }
+        { threshold: 0.15 },
       );
       section3Observer.observe(section3Ref.value);
     }
@@ -297,7 +299,7 @@ onMounted(() => {
             visibleRef.value = true;
           }
         },
-        { threshold: 0.15 }
+        { threshold: 0.15 },
       );
       obs.observe(elRef.value);
       additionalObservers.push(obs);
@@ -353,7 +355,7 @@ onUnmounted(() => {
     >
       <!-- Responsive Fluid Banner -->
       <div
-        class="relative w-full max-w-[1240px] flex flex-col lg:flex-row items-center justify-between bg-gradient-to-b lg:bg-gradient-to-r from-[#97c5f8] via-[#a2b5ca] to-[#ca9c76] rounded-none overflow-visible lg:h-[440px]"
+        class="relative w-full max-w-[1240px] flex flex-col lg:flex-row items-center justify-between bg-gradient-to-b lg:bg-gradient-to-r from-[#53A8F1] to-[#AF6E41] rounded-none overflow-visible lg:h-[440px]"
       >
         <!-- Typography: Smooth slide from left -->
         <div
@@ -511,11 +513,6 @@ onUnmounted(() => {
           class="absolute inset-0 w-full h-full object-cover object-center select-none anim-banner-bg"
           :class="{ 'anim-active': isSection3Visible }"
         />
-        <!-- Subtle dark gradient overlay for text readability -->
-        <div
-          class="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent anim-fade-overlay"
-          :class="{ 'anim-active': isSection3Visible }"
-        ></div>
 
         <!-- Overlay Text Block (Smooth slide from left) -->
         <div
@@ -870,10 +867,6 @@ onUnmounted(() => {
           class="absolute inset-0 w-full h-full object-cover object-center select-none anim-banner-bg"
           :class="{ 'anim-active': isAboutVisible }"
         />
-        <div
-          class="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-transparent anim-fade-overlay"
-          :class="{ 'anim-active': isAboutVisible }"
-        ></div>
 
         <!-- Overlaid Content -->
         <div
@@ -1052,7 +1045,7 @@ onUnmounted(() => {
             type="submit"
             :class="[
               'group relative px-9 py-3 bg-black text-white text-[12px] sm:text-[13px] font-medium transition-all duration-300 shadow-sm cursor-pointer select-none rounded-none inline-flex items-center gap-2.5 hover:bg-neutral-800 hover:shadow-md active:scale-95',
-              isSubmitting ? 'scale-95 bg-neutral-800' : ''
+              isSubmitting ? 'scale-95 bg-neutral-800' : '',
             ]"
           >
             <span class="tracking-wide">Send</span>
@@ -1060,7 +1053,7 @@ onUnmounted(() => {
             <svg
               :class="[
                 'w-3.5 h-3.5 transition-opacity duration-300',
-                isSubmitting ? 'opacity-0' : 'opacity-100'
+                isSubmitting ? 'opacity-0' : 'opacity-100',
               ]"
               fill="none"
               stroke="currentColor"
@@ -1090,11 +1083,6 @@ onUnmounted(() => {
         class="absolute inset-0 w-full h-full object-cover object-center select-none anim-banner-bg"
         :class="{ 'anim-active': isFooterVisible }"
       />
-      <!-- Top gradient overlay for text readability matching screenshot -->
-      <div
-        class="absolute inset-0 bg-gradient-to-b from-black/85 via-black/50 to-transparent pointer-events-none anim-fade-overlay"
-        :class="{ 'anim-active': isFooterVisible }"
-      ></div>
 
       <!-- Footer Content Container -->
       <div
@@ -1221,7 +1209,7 @@ onUnmounted(() => {
           <!-- Email Input + Subscribe Button inline -->
           <form
             @submit.prevent="submitNewsletter"
-            class="w-full flex items-center bg-black/40 border border-neutral-400 rounded-none overflow-hidden"
+            class="w-full flex items-center bg-transparent border border-neutral-400 rounded-none overflow-hidden"
           >
             <input
               v-model="newsletterEmail"
@@ -1371,14 +1359,18 @@ onUnmounted(() => {
 .anim-slide-left {
   opacity: 0;
   transform: translate3d(-60px, 0, 0);
-  transition: opacity 3.2s cubic-bezier(0.16, 1, 0.3, 1), transform 3.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    opacity 3.2s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 3.2s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
 }
 
 .anim-slide-right {
   opacity: 0;
   transform: translate3d(60px, 0, 0);
-  transition: opacity 3.2s cubic-bezier(0.16, 1, 0.3, 1), transform 3.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    opacity 3.2s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 3.2s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
 }
 
@@ -1386,7 +1378,9 @@ onUnmounted(() => {
   opacity: 0;
   transform: translate3d(90px, 0, 0) scale(0.65);
   transform-origin: bottom right;
-  transition: opacity 4.5s cubic-bezier(0.16, 1, 0.3, 1), transform 4.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    opacity 4.5s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 4.5s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
 }
 
@@ -1394,7 +1388,9 @@ onUnmounted(() => {
   opacity: 0;
   transform: translate3d(-50px, 0, 0) scale(0.7);
   transform-origin: center;
-  transition: opacity 3.8s cubic-bezier(0.16, 1, 0.3, 1), transform 3.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    opacity 3.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 3.8s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
 }
 
@@ -1402,14 +1398,18 @@ onUnmounted(() => {
   opacity: 0;
   transform: translate3d(50px, 0, 0) scale(0.7);
   transform-origin: center;
-  transition: opacity 3.8s cubic-bezier(0.16, 1, 0.3, 1), transform 3.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    opacity 3.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 3.8s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
 }
 
 .anim-banner-bg {
   opacity: 0;
   transform: translate3d(200px, 0, 0) scale(1.06);
-  transition: opacity 3.6s cubic-bezier(0.16, 1, 0.3, 1), transform 3.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    opacity 3.6s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 3.6s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
 }
 
