@@ -39,6 +39,10 @@ const selectedImageIndex = ref(null);
 const currentLeftImg = computed(() => galleryImages[pairIndex.value * 2]);
 const currentRightImg = computed(() => galleryImages[pairIndex.value * 2 + 1]);
 
+const currentFocusedPhotoNumber = computed(() => {
+  return pairIndex.value * 2 + (activeSide.value === "left" ? 1 : 2);
+});
+
 const canGoPrev = computed(
   () => pairIndex.value > 0 || activeSide.value === "right",
 );
@@ -238,7 +242,9 @@ onUnmounted(() => {
         <div
           class="w-full max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 lg:mt-[-80px]"
         >
-          <div class="flex flex-col w-full max-w-[420px] lg:w-[380px] xl:w-[420px]">
+          <div
+            class="flex flex-col w-full max-w-[420px] lg:w-[380px] xl:w-[420px]"
+          >
             <div
               class="w-full aspect-square overflow-hidden bg-neutral-100 mb-4 sm:mb-5"
             >
@@ -479,108 +485,421 @@ onUnmounted(() => {
               </svg>
             </button>
             <span class="text-xs text-neutral-600 font-medium pl-1 select-none">
-              Pair {{ pairIndex + 1 }} of
-              {{ Math.ceil(galleryImages.length / 2) }}
+              Photo {{ currentFocusedPhotoNumber }} of
+              {{ galleryImages.length }}
             </span>
           </div>
         </div>
 
-        <!-- Right 2 Visible Images (Side-by-Side with 0 Gap & Smooth Scale) -->
+        <!-- Right 2 Visible Images Container (Outer wrapper preserves fixed origin aspect ratio, preventing height changes) -->
         <div
-          class="lg:col-span-8 w-full flex items-center justify-start gap-0 select-none overflow-hidden"
+          class="lg:col-span-8 relative w-full aspect-[4/3] sm:aspect-[16/11] lg:aspect-[16/10] overflow-hidden select-none"
         >
-          <!-- Left Image Slot -->
           <div
-            @click="handleLeftClick"
-            :class="[
-              'group relative shrink-0 aspect-square overflow-hidden bg-neutral-100 cursor-pointer transition-all duration-500 ease-in-out select-none rounded-none',
-              activeSide === 'left'
-                ? 'w-[68%] z-10 shadow-sm'
-                : 'w-[32%] z-0 brightness-95 hover:brightness-100',
-            ]"
+            class="absolute inset-0 w-full h-full flex items-center justify-start gap-0 select-none overflow-hidden"
           >
-            <img
-              :src="currentLeftImg?.src"
-              :alt="currentLeftImg?.alt"
-              class="w-full h-full object-cover select-none rounded-none"
-            />
-
-            <!-- Active Expand Hint on Click -->
+            <!-- Left Image Slot -->
             <div
-              v-if="activeSide === 'left'"
-              class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center text-white rounded-none"
+              @click="handleLeftClick"
+              :class="[
+                'group relative shrink-0 aspect-square overflow-hidden bg-neutral-100 cursor-pointer transition-all duration-500 ease-in-out select-none rounded-none',
+                activeSide === 'left'
+                  ? 'w-[68%] z-10 shadow-sm'
+                  : 'w-[32%] z-0 brightness-95 hover:brightness-100',
+              ]"
             >
+              <img
+                :src="currentLeftImg?.src"
+                :alt="currentLeftImg?.alt"
+                class="w-full h-full object-cover select-none rounded-none"
+              />
+
+              <!-- Active Expand Hint on Click -->
               <div
-                class="w-10 h-10 bg-black/70 backdrop-blur-sm flex items-center justify-center mb-2 rounded-none"
+                v-if="activeSide === 'left'"
+                class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center text-white rounded-none"
               >
-                <svg
-                  class="w-5 h-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
+                <div
+                  class="w-10 h-10 bg-black/70 backdrop-blur-sm flex items-center justify-center mb-2 rounded-none"
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"
-                  />
-                </svg>
+                  <svg
+                    class="w-5 h-5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"
+                    />
+                  </svg>
+                </div>
+                <span class="text-[12px] font-medium tracking-wide"
+                  >Click to expand</span
+                >
               </div>
-              <span class="text-[12px] font-medium tracking-wide"
-                >Click to expand</span
-              >
             </div>
-          </div>
 
-          <!-- Right Image Slot -->
-          <div
-            @click="handleRightClick"
-            :class="[
-              'group relative shrink-0 aspect-square overflow-hidden bg-neutral-100 cursor-pointer transition-all duration-500 ease-in-out select-none rounded-none border-l-0',
-              activeSide === 'right'
-                ? 'w-[68%] z-10 shadow-sm'
-                : 'w-[32%] z-0 brightness-95 hover:brightness-100',
-            ]"
-          >
-            <img
-              :src="currentRightImg?.src"
-              :alt="currentRightImg?.alt"
-              class="w-full h-full object-cover select-none rounded-none"
-            />
-
-            <!-- Active Expand Hint on Click -->
+            <!-- Right Image Slot -->
             <div
-              v-if="activeSide === 'right'"
-              class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center text-white rounded-none"
+              @click="handleRightClick"
+              :class="[
+                'group relative shrink-0 aspect-square overflow-hidden bg-neutral-100 cursor-pointer transition-all duration-500 ease-in-out select-none rounded-none border-l-0',
+                activeSide === 'right'
+                  ? 'w-[68%] z-10 shadow-sm'
+                  : 'w-[32%] z-0 brightness-95 hover:brightness-100',
+              ]"
             >
+              <img
+                :src="currentRightImg?.src"
+                :alt="currentRightImg?.alt"
+                class="w-full h-full object-cover select-none rounded-none"
+              />
+
+              <!-- Active Expand Hint on Click -->
               <div
-                class="w-10 h-10 bg-black/70 backdrop-blur-sm flex items-center justify-center mb-2 rounded-none"
+                v-if="activeSide === 'right'"
+                class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center text-white rounded-none"
               >
-                <svg
-                  class="w-5 h-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
+                <div
+                  class="w-10 h-10 bg-black/70 backdrop-blur-sm flex items-center justify-center mb-2 rounded-none"
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"
-                  />
-                </svg>
+                  <svg
+                    class="w-5 h-5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"
+                    />
+                  </svg>
+                </div>
+                <span class="text-[12px] font-medium tracking-wide"
+                  >Click to expand</span
+                >
               </div>
-              <span class="text-[12px] font-medium tracking-wide"
-                >Click to expand</span
-              >
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Full Screen Lightbox Modal Popup (100% No Rounded, Non-looping buttons) -->
+    <!-- 5. Section 5: "About Us" Banner (Matching whole-page.png) -->
+    <section
+      id="about"
+      class="w-full max-w-[1240px] mt-24 sm:mt-32 px-4 sm:px-6 lg:px-8"
+    >
+      <!-- Section Big Title: "About Us" with clean underline accent -->
+      <div class="mb-14 sm:mb-16">
+        <h2
+          class="text-3xl sm:text-4xl lg:text-[42px] font-normal text-neutral-900 font-['Newsreader',serif] tracking-tight pb-2 border-b border-neutral-300 inline-block"
+        >
+          About Us
+        </h2>
+      </div>
+
+      <!-- Banner Card with Overlaid Heading & CTA -->
+      <div
+        class="relative w-full h-[360px] sm:h-[440px] lg:h-[500px] overflow-hidden rounded-none shadow-md flex items-center"
+      >
+        <img
+          :src="bigHouseBg"
+          alt="About Us Villa"
+          class="absolute inset-0 w-full h-full object-cover object-center select-none"
+        />
+        <div
+          class="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-transparent"
+        ></div>
+
+        <!-- Overlaid Content -->
+        <div
+          class="relative z-10 px-6 sm:px-12 lg:px-16 max-w-[700px] flex flex-col items-start"
+        >
+          <p
+            class="text-[12px] sm:text-[13px] text-white/90 font-medium tracking-wide mb-3"
+          >
+            Crafting Tomorrow's Living Spaces:
+          </p>
+          <h2
+            class="text-2xl sm:text-3xl lg:text-[38px] font-normal leading-[1.2] text-white tracking-tight font-['Newsreader',serif] mb-6 sm:mb-8"
+          >
+            Set New Standards in Modern Home Construction Set New Standards in
+            Modern Home Construction Set New Standards in Modern Home
+            Construction
+          </h2>
+          <RouterLink
+            to="/contact"
+            class="px-7 py-2.5 bg-white text-neutral-950 text-[12px] sm:text-[13px] font-medium hover:bg-neutral-100 transition-colors shadow-sm cursor-pointer select-none inline-block rounded-none"
+          >
+            Get In touch
+          </RouterLink>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Section 6: "Ideas Turn Into Reality" (Matching whole-page.png layout) -->
+    <section class="w-full max-w-[1240px] mt-24 sm:mt-32 px-4 sm:px-6 lg:px-8">
+      <!-- Title -->
+      <div class="mb-12 sm:mb-14">
+        <h2
+          class="text-3xl sm:text-4xl lg:text-[42px] font-normal text-neutral-900 font-['Newsreader',serif] tracking-tight pb-2 border-b border-neutral-300 inline-block"
+        >
+          Ideas Turn Into Reality
+        </h2>
+      </div>
+
+      <!-- Asymmetrical 3-Column Image Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
+        <!-- Left Column: 2 Stacked Square Photos -->
+        <div class="lg:col-span-4 flex flex-col gap-6 sm:gap-8">
+          <div
+            class="w-full aspect-square overflow-hidden bg-neutral-100 rounded-none"
+          >
+            <img
+              :src="houseBottomLeft"
+              alt="Modern Multilevel Residence"
+              class="w-full h-full object-cover hover:scale-105 transition-transform duration-500 rounded-none"
+            />
+          </div>
+          <div
+            class="w-full aspect-square overflow-hidden bg-neutral-100 rounded-none"
+          >
+            <img
+              :src="houseTopLeft"
+              alt="Luxury modern villa design"
+              class="w-full h-full object-cover hover:scale-105 transition-transform duration-500 rounded-none"
+            />
+          </div>
+        </div>
+
+        <!-- Center Column: Tall Hero Image with Description below -->
+        <div class="lg:col-span-5 flex flex-col">
+          <div
+            class="w-full aspect-[4/5] overflow-hidden bg-neutral-100 mb-5 rounded-none"
+          >
+            <img
+              :src="houseRight"
+              alt="Illuminated Architectural House"
+              class="w-full h-full object-cover hover:scale-105 transition-transform duration-500 rounded-none"
+            />
+          </div>
+          <p
+            class="text-[clamp(12px,1.2vw,13px)] leading-[1.7] text-neutral-600 font-normal font-['Rufina',serif]"
+          >
+            We adapt a uniquely personalised perspective to each project to
+            deliver stunning spaces of optimal function. Renowned for our
+            architectural understanding and masterful craftsmanship, our
+            portfolio of residential projects
+          </p>
+        </div>
+
+        <!-- Right Column: Single Smaller Square Photo -->
+        <div class="lg:col-span-3 flex flex-col">
+          <div
+            class="w-full aspect-square overflow-hidden bg-neutral-100 rounded-none"
+          >
+            <img
+              :src="houseBottomLeft"
+              alt="Contemporary multilevel residence"
+              class="w-full h-full object-cover hover:scale-105 transition-transform duration-500 rounded-none"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Section 7: "Get in touch" Form (Matching whole-page.png) -->
+    <section
+      id="contact"
+      class="w-full max-w-[1240px] mt-24 sm:mt-32 px-4 sm:px-6 lg:px-8"
+    >
+      <!-- Title -->
+      <div class="mb-10 sm:mb-12">
+        <h2
+          class="text-3xl sm:text-4xl lg:text-[42px] font-normal text-neutral-900 font-['Newsreader',serif] tracking-tight pb-2 border-b border-neutral-300 inline-block"
+        >
+          Get in touch
+        </h2>
+      </div>
+
+      <!-- Form Inputs Grid -->
+      <form @submit.prevent class="w-full flex flex-col gap-6 max-w-[1100px]">
+        <!-- Row 1: Email & User Name -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <input
+            type="email"
+            placeholder="Email..."
+            class="w-full px-4 py-3 border border-neutral-400 bg-white text-neutral-800 text-sm focus:outline-none focus:border-black transition-colors rounded-none placeholder:text-neutral-500"
+          />
+          <input
+            type="text"
+            placeholder="User Name..."
+            class="w-full px-4 py-3 border border-neutral-400 bg-white text-neutral-800 text-sm focus:outline-none focus:border-black transition-colors rounded-none placeholder:text-neutral-500"
+          />
+        </div>
+
+        <!-- Row 2: Phone Number & Location -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <input
+            type="tel"
+            placeholder="Phone Number..."
+            class="w-full px-4 py-3 border border-neutral-400 bg-white text-neutral-800 text-sm focus:outline-none focus:border-black transition-colors rounded-none placeholder:text-neutral-500"
+          />
+          <input
+            type="text"
+            placeholder="Location..."
+            class="w-full px-4 py-3 border border-neutral-400 bg-white text-neutral-800 text-sm focus:outline-none focus:border-black transition-colors rounded-none placeholder:text-neutral-500"
+          />
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-2">
+          <button
+            type="submit"
+            class="px-8 py-3 bg-black text-white text-[12px] sm:text-[13px] font-medium hover:bg-neutral-800 transition-colors shadow-sm cursor-pointer select-none rounded-none"
+          >
+            Inclusion List
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- 8. Section 8: Footer (Matching whole-page.png) -->
+    <footer
+      class="relative w-full mt-24 sm:mt-32 overflow-hidden bg-neutral-950 text-white min-h-[420px] flex items-center justify-center rounded-none"
+    >
+      <!-- Background House with Dark Dim Overlay -->
+      <img
+        :src="bigHouseBg"
+        alt="Footer Modern Villa"
+        class="absolute inset-0 w-full h-full object-cover object-center opacity-40 select-none"
+      />
+      <div class="absolute inset-0 bg-black/60 backdrop-blur-[2px]"></div>
+
+      <!-- Footer Content Container -->
+      <div
+        class="relative z-10 w-full max-w-[1240px] px-6 sm:px-10 lg:px-12 py-16 grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-16 items-start"
+      >
+        <!-- Column 1: Brand Logo & Social Icons -->
+        <div class="md:col-span-5 flex flex-col items-start">
+          <h2
+            class="text-3xl sm:text-4xl font-normal tracking-tight font-['Bodoni_Moda',serif] italic mb-8"
+          >
+            RealestateToyal
+          </h2>
+          <!-- Social Icons -->
+          <div class="flex items-center gap-4">
+            <!-- LinkedIn -->
+            <a
+              href="https://linkedin.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="LinkedIn"
+              class="w-8 h-8 rounded-full bg-[#0A66C2] flex items-center justify-center text-white hover:opacity-90 transition-opacity"
+            >
+              <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <path
+                  d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9v8.37H9.2V10.9H6.46M7.83 6.45c-.9 0-1.63.73-1.63 1.63 0 .9.73 1.63 1.63 1.63.9 0 1.63-.73 1.63-1.63 0-.9-.73-1.63-1.63-1.63Z"
+                />
+              </svg>
+            </a>
+            <!-- Telegram -->
+            <a
+              href="https://telegram.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Telegram"
+              class="w-8 h-8 rounded-full bg-[#2AABEE] flex items-center justify-center text-white hover:opacity-90 transition-opacity"
+            >
+              <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"
+                />
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Column 2: Navigation Links -->
+        <div class="md:col-span-3 flex flex-col items-start">
+          <h3
+            class="text-xl sm:text-2xl font-normal tracking-tight font-['Newsreader',serif] mb-4 text-white"
+          >
+            Navigation
+          </h3>
+          <ul
+            class="flex flex-col gap-2.5 text-sm text-neutral-300 font-['Inter',sans-serif]"
+          >
+            <li>
+              <RouterLink to="/" class="hover:text-white transition-colors">
+                House Design
+              </RouterLink>
+            </li>
+            <li>
+              <RouterLink
+                to="/inclusion-list"
+                class="hover:text-white transition-colors"
+              >
+                Inclusion List
+              </RouterLink>
+            </li>
+            <li>
+              <RouterLink
+                to="/about"
+                class="hover:text-white transition-colors"
+              >
+                About
+              </RouterLink>
+            </li>
+            <li>
+              <RouterLink
+                to="/contact"
+                class="hover:text-white transition-colors"
+              >
+                Get in touch
+              </RouterLink>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Column 3: Newsletter Signup -->
+        <div class="md:col-span-4 flex flex-col items-start">
+          <h3
+            class="text-xl sm:text-2xl font-normal tracking-tight font-['Newsreader',serif] mb-3 text-white"
+          >
+            Newsletter Signup
+          </h3>
+          <p
+            class="text-xs text-neutral-400 mb-4 leading-relaxed font-['Inter',sans-serif]"
+          >
+            Sign up for email address to solo matlins.and nowe more.
+          </p>
+          <!-- Email Input + Subscribe Button inline -->
+          <form
+            @submit.prevent
+            class="w-full flex items-center bg-black/60 border border-neutral-600 rounded-none overflow-hidden"
+          >
+            <input
+              type="email"
+              placeholder="Email..."
+              class="w-full bg-transparent px-3.5 py-2.5 text-xs text-white placeholder:text-neutral-500 focus:outline-none rounded-none"
+            />
+            <button
+              type="submit"
+              class="px-5 py-2.5 bg-neutral-200 text-neutral-900 text-xs font-medium hover:bg-white transition-colors cursor-pointer shrink-0 rounded-none"
+            >
+              Subscribe
+            </button>
+          </form>
+        </div>
+      </div>
+    </footer>
     <Teleport to="body">
       <Transition name="lightbox-fade">
         <div
