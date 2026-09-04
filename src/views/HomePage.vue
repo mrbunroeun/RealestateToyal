@@ -52,6 +52,11 @@ const isHouse2Visible = ref(false);
 const isHouse3Visible = ref(false);
 let section2Observers = [];
 
+// Section 3 banner animation state
+const section3Ref = ref(null);
+const isSection3Visible = ref(false);
+let section3Observer = null;
+
 watch(() => [route.path, route.hash], handleRouteScroll);
 
 // Gallery state for Item 3 (4 images total, dual-image side-by-side with 0 gap)
@@ -245,11 +250,25 @@ onMounted(() => {
     observeElement(house1Ref, isHouse1Visible);
     observeElement(house2Ref, isHouse2Visible);
     observeElement(house3Ref, isHouse3Visible);
+
+    // Section 3 Banner Observer
+    if (section3Ref.value) {
+      section3Observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            isSection3Visible.value = true;
+          }
+        },
+        { threshold: 0.15 }
+      );
+      section3Observer.observe(section3Ref.value);
+    }
   } else {
     isHeroVisible.value = true;
     isHouse1Visible.value = true;
     isHouse2Visible.value = true;
     isHouse3Visible.value = true;
+    isSection3Visible.value = true;
   }
 });
 
@@ -257,6 +276,9 @@ onUnmounted(() => {
   window.removeEventListener("keydown", handleKeyDown);
   if (heroObserver) {
     heroObserver.disconnect();
+  }
+  if (section3Observer) {
+    section3Observer.disconnect();
   }
   section2Observers.forEach((obs) => obs.disconnect());
   section2Observers = [];
@@ -277,14 +299,10 @@ onUnmounted(() => {
       <div
         class="relative w-full max-w-[1240px] flex flex-col lg:flex-row items-center justify-between bg-gradient-to-b lg:bg-gradient-to-r from-[#97c5f8] via-[#a2b5ca] to-[#ca9c76] rounded-none overflow-visible lg:h-[440px]"
       >
-        <!-- Typography: Smooth slide from left (slower cinematic entrance) -->
+        <!-- Typography: Smooth slide from left -->
         <div
-          :class="[
-            'z-30 w-full lg:w-[54%] px-6 sm:px-10 lg:pl-16 pt-8 pb-4 lg:py-0 shrink-0 transform transition-all duration-[2200ms] ease-[cubic-bezier(0.16,1,0.3,1)]',
-            isHeroVisible
-              ? 'opacity-100 translate-x-0'
-              : 'opacity-0 -translate-x-16 sm:-translate-x-24'
-          ]"
+          class="z-30 w-full lg:w-[54%] px-6 sm:px-10 lg:pl-16 pt-8 pb-4 lg:py-0 shrink-0 anim-slide-left"
+          :class="{ 'anim-active': isHeroVisible }"
         >
           <p
             class="text-[clamp(11px,1.4vw,14px)] text-neutral-800 font-medium tracking-wide mb-2 sm:mb-4"
@@ -300,14 +318,10 @@ onUnmounted(() => {
           </h1>
         </div>
 
-        <!-- Architecture Building Image: Ultra-smooth, slow scale from small to big while sliding from right -->
+        <!-- Architecture Building Image: Ultra-smooth scale from small to big while sliding from right -->
         <div
-          :class="[
-            'w-full lg:w-[46%] relative lg:absolute lg:right-0 lg:bottom-0 flex items-end justify-center lg:justify-end z-20 overflow-visible pt-2 lg:pt-0 pointer-events-none transform transition-all duration-[3600ms] ease-[cubic-bezier(0.16,1,0.3,1)] origin-bottom-right delay-100',
-            isHeroVisible
-              ? 'opacity-100 translate-x-0 scale-100'
-              : 'opacity-0 translate-x-16 sm:translate-x-24 scale-65 sm:scale-70'
-          ]"
+          class="w-full lg:w-[46%] relative lg:absolute lg:right-0 lg:bottom-0 flex items-end justify-center lg:justify-end z-20 overflow-visible pt-2 lg:pt-0 pointer-events-none anim-hero-building"
+          :class="{ 'anim-active': isHeroVisible }"
         >
           <img
             :src="heroBuilding"
@@ -324,12 +338,8 @@ onUnmounted(() => {
       <div ref="house1Ref" class="w-full flex flex-col lg:flex-row items-start">
         <!-- Text container (Slides smoothly from right) -->
         <div
-          :class="[
-            'w-full lg:order-2 flex justify-start px-6 sm:px-12 lg:pl-20 pt-2 lg:pt-4 mb-6 lg:mb-0 transform transition-all duration-[2200ms] ease-[cubic-bezier(0.16,1,0.3,1)]',
-            isHouse1Visible
-              ? 'opacity-100 translate-x-0'
-              : 'opacity-0 translate-x-12 sm:translate-x-16'
-          ]"
+          class="w-full lg:order-2 flex justify-start px-6 sm:px-12 lg:pl-20 pt-2 lg:pt-4 mb-6 lg:mb-0 anim-slide-right"
+          :class="{ 'anim-active': isHouse1Visible }"
         >
           <div class="max-w-[490px]">
             <h2
@@ -351,12 +361,8 @@ onUnmounted(() => {
 
         <!-- House Image 1 (Scale up from small & slide from left) -->
         <div
-          :class="[
-            'w-full lg:order-1 lg:w-[380px] xl:w-[420px] shrink-0 px-6 sm:px-12 lg:px-0 transform transition-all duration-[2800ms] ease-[cubic-bezier(0.16,1,0.3,1)] origin-center',
-            isHouse1Visible
-              ? 'opacity-100 scale-100 translate-x-0'
-              : 'opacity-0 scale-70 -translate-x-12 sm:-translate-x-16'
-          ]"
+          class="w-full lg:order-1 lg:w-[380px] xl:w-[420px] shrink-0 px-6 sm:px-12 lg:px-0 anim-house-scale-left"
+          :class="{ 'anim-active': isHouse1Visible }"
         >
           <div
             class="w-full max-w-[420px] mx-auto lg:mx-0 aspect-square overflow-hidden bg-neutral-100"
@@ -379,12 +385,8 @@ onUnmounted(() => {
         >
           <!-- Image 2 (Scale up from small & slide from right) -->
           <div
-            :class="[
-              'w-full max-w-[420px] mx-auto lg:mx-0 aspect-square overflow-hidden bg-neutral-100 mb-4 sm:mb-5 transform transition-all duration-[2800ms] ease-[cubic-bezier(0.16,1,0.3,1)] origin-center',
-              isHouse2Visible
-                ? 'opacity-100 scale-100 translate-x-0'
-                : 'opacity-0 scale-70 translate-x-12 sm:translate-x-16'
-            ]"
+            class="w-full max-w-[420px] mx-auto lg:mx-0 aspect-square overflow-hidden bg-neutral-100 mb-4 sm:mb-5 anim-house-scale-right"
+            :class="{ 'anim-active': isHouse2Visible }"
           >
             <img
               :src="houseRight"
@@ -394,12 +396,8 @@ onUnmounted(() => {
           </div>
           <!-- Text 2 (Slide into view) -->
           <p
-            class="text-[clamp(12px,1.2vw,13px)] leading-[1.7] text-neutral-600 font-normal font-['Rufina',serif] max-w-[420px] mx-auto lg:mx-0 lg:pr-8 transform transition-all duration-[2200ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-100"
-            :class="[
-              isHouse2Visible
-                ? 'opacity-100 translate-x-0'
-                : 'opacity-0 translate-x-10'
-            ]"
+            class="text-[clamp(12px,1.2vw,13px)] leading-[1.7] text-neutral-600 font-normal font-['Rufina',serif] max-w-[420px] mx-auto lg:mx-0 lg:pr-8 anim-slide-right"
+            :class="{ 'anim-active': isHouse2Visible }"
           >
             We adapt a uniquely personalised perspective to each project to
             deliver stunning spaces of optimal function. Renowned for our
@@ -418,12 +416,8 @@ onUnmounted(() => {
           >
             <!-- Image 3 (Scale up from small & slide from left) -->
             <div
-              :class="[
-                'w-full aspect-square overflow-hidden bg-neutral-100 mb-4 sm:mb-5 transform transition-all duration-[2800ms] ease-[cubic-bezier(0.16,1,0.3,1)] origin-center',
-                isHouse3Visible
-                  ? 'opacity-100 scale-100 translate-x-0'
-                  : 'opacity-0 scale-70 -translate-x-12 sm:-translate-x-16'
-              ]"
+              class="w-full aspect-square overflow-hidden bg-neutral-100 mb-4 sm:mb-5 anim-house-scale-left"
+              :class="{ 'anim-active': isHouse3Visible }"
             >
               <img
                 :src="houseBottomLeft"
@@ -433,12 +427,8 @@ onUnmounted(() => {
             </div>
             <!-- Text 3 (Slide into view) -->
             <p
-              class="text-[clamp(12px,1.2vw,13px)] leading-[1.7] text-neutral-600 font-normal font-['Rufina',serif] transform transition-all duration-[2200ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-100"
-              :class="[
-                isHouse3Visible
-                  ? 'opacity-100 translate-x-0'
-                  : 'opacity-0 -translate-x-10'
-              ]"
+              class="text-[clamp(12px,1.2vw,13px)] leading-[1.7] text-neutral-600 font-normal font-['Rufina',serif] anim-slide-left"
+              :class="{ 'anim-active': isHouse3Visible }"
             >
               We adapt a uniquely personalised perspective to each project to
               deliver stunning spaces of optimal function. Renowned for our
@@ -450,25 +440,31 @@ onUnmounted(() => {
       </div>
     </section>
 
-    <!-- 3. Section 3: Full-width Image Banner with Text Overlay (Original design from whole-page.png) -->
-    <section class="w-full max-w-[1240px] mt-16 sm:mt-24 px-4 sm:px-6 lg:px-8">
+    <!-- 3. Section 3: Full-width Image Banner with Text Overlay (Smooth entrance from right overflow) -->
+    <section
+      ref="section3Ref"
+      class="w-full max-w-[1240px] mt-16 sm:mt-24 px-4 sm:px-6 lg:px-8 overflow-hidden"
+    >
       <div
         class="relative w-full h-[320px] sm:h-[400px] lg:h-[480px] overflow-hidden rounded-none shadow-md flex items-center"
       >
-        <!-- Background Image -->
+        <!-- Background Image (Moves smoothly from the overflow of the right into place) -->
         <img
           :src="bigHouseBg"
           alt="Modern House Construction"
-          class="absolute inset-0 w-full h-full object-cover object-center select-none"
+          class="absolute inset-0 w-full h-full object-cover object-center select-none anim-banner-bg"
+          :class="{ 'anim-active': isSection3Visible }"
         />
         <!-- Subtle dark gradient overlay for text readability -->
         <div
-          class="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"
+          class="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent anim-fade-overlay"
+          :class="{ 'anim-active': isSection3Visible }"
         ></div>
 
-        <!-- Overlay Text Block -->
+        <!-- Overlay Text Block (Smooth slide from left) -->
         <div
-          class="relative z-10 px-6 sm:px-12 lg:px-16 max-w-[550px] flex flex-col items-start"
+          class="relative z-10 px-6 sm:px-12 lg:px-16 max-w-[550px] flex flex-col items-start anim-slide-left"
+          :class="{ 'anim-active': isSection3Visible }"
         >
           <p
             class="text-[12px] sm:text-[13px] text-white/90 font-medium tracking-wide mb-3"
@@ -1258,5 +1254,62 @@ onUnmounted(() => {
 .lightbox-fade-enter-from,
 .lightbox-fade-leave-to {
   opacity: 0;
+}
+
+/* Hardware-Accelerated Smooth CSS Motion */
+.anim-slide-left {
+  opacity: 0;
+  transform: translate3d(-60px, 0, 0);
+  transition: opacity 2.2s cubic-bezier(0.16, 1, 0.3, 1), transform 2.2s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.anim-slide-right {
+  opacity: 0;
+  transform: translate3d(60px, 0, 0);
+  transition: opacity 2.2s cubic-bezier(0.16, 1, 0.3, 1), transform 2.2s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.anim-hero-building {
+  opacity: 0;
+  transform: translate3d(90px, 0, 0) scale(0.65);
+  transform-origin: bottom right;
+  transition: opacity 3.6s cubic-bezier(0.16, 1, 0.3, 1), transform 3.6s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.anim-house-scale-left {
+  opacity: 0;
+  transform: translate3d(-50px, 0, 0) scale(0.7);
+  transform-origin: center;
+  transition: opacity 2.8s cubic-bezier(0.16, 1, 0.3, 1), transform 2.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.anim-house-scale-right {
+  opacity: 0;
+  transform: translate3d(50px, 0, 0) scale(0.7);
+  transform-origin: center;
+  transition: opacity 2.8s cubic-bezier(0.16, 1, 0.3, 1), transform 2.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.anim-banner-bg {
+  opacity: 0;
+  transform: translate3d(200px, 0, 0) scale(1.06);
+  transition: opacity 2.6s cubic-bezier(0.16, 1, 0.3, 1), transform 2.6s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.anim-fade-overlay {
+  opacity: 0;
+  transition: opacity 2s ease;
+}
+
+/* Active State Trigger */
+.anim-active {
+  opacity: 1 !important;
+  transform: translate3d(0, 0, 0) scale(1) !important;
 }
 </style>
