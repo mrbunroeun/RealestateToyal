@@ -1,11 +1,58 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
-import { RouterLink } from "vue-router";
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
+import { RouterLink, useRoute } from "vue-router";
 import heroBuilding from "@/assets/house-imag/set-new-standard.png";
 import houseTopLeft from "@/assets/house-imag/if-you-can-dream-it.png";
 import houseRight from "@/assets/house-imag/we-adapt.png";
 import houseBottomLeft from "@/assets/house-imag/second-we-adapt.png";
 import bigHouseBg from "@/assets/house-imag/bg-img.png";
+
+const route = useRoute();
+
+const scrollToSection = (id) => {
+  const target = document.getElementById(id);
+  if (target) {
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+};
+
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+const handleRouteScroll = () => {
+  nextTick(() => {
+    const path = route.path;
+    const hash = route.hash;
+    if (hash) {
+      scrollToSection(hash.replace("#", ""));
+    } else if (path === "/house-design") {
+      scrollToSection("house-design");
+    } else if (path === "/inclusion-list") {
+      scrollToSection("inclusion-list");
+    } else if (path === "/about") {
+      scrollToSection("about");
+    } else if (path === "/contact") {
+      scrollToSection("contact");
+    }
+  });
+};
+
+// Hero section entrance animation state
+const heroSectionRef = ref(null);
+const isHeroVisible = ref(false);
+let heroObserver = null;
+
+// Section 2 showcase animations state
+const house1Ref = ref(null);
+const house2Ref = ref(null);
+const house3Ref = ref(null);
+const isHouse1Visible = ref(false);
+const isHouse2Visible = ref(false);
+const isHouse3Visible = ref(false);
+let section2Observers = [];
+
+watch(() => [route.path, route.hash], handleRouteScroll);
 
 // Gallery state for Item 3 (4 images total, dual-image side-by-side with 0 gap)
 const galleryImages = [
@@ -39,12 +86,18 @@ const contactForm = ref({
   location: "",
 });
 const newsletterEmail = ref("");
+const isSubmitting = ref(false);
 
 const submitContactForm = () => {
   const email = contactForm.value.email.trim();
   const name = contactForm.value.name.trim();
   const phone = contactForm.value.phone.trim();
   const location = contactForm.value.location.trim();
+
+  isSubmitting.value = true;
+  setTimeout(() => {
+    isSubmitting.value = false;
+  }, 900);
 
   const lines = [
     `Hi Bunroeun, I would like to get in touch:`,
@@ -62,9 +115,11 @@ const submitContactForm = () => {
 const submitNewsletter = () => {
   const email = newsletterEmail.value.trim();
   if (!email) return;
-  const message = `Hi Bunroeun, I would like to subscribe to your newsletter:\n• Email: ${email}`;
-  const telegramUrl = `https://t.me/HasBunRoeun?text=${encodeURIComponent(message)}`;
-  window.open(telegramUrl, "_blank");
+  const subject = encodeURIComponent("New Newsletter Subscription - RealestateToyal");
+  const body = encodeURIComponent(
+    `Hi Bunroeun,\n\nI would like to subscribe to the RealestateToyal newsletter with the following email address:\n\nSubscriber Email: ${email}`
+  );
+  window.location.href = `mailto:bunroeunhas@gmail.com?subject=${subject}&body=${body}`;
 };
 
 // Item 3 State: Dual-image 0-gap presentation with smooth expand & non-looping navigation
@@ -156,37 +211,88 @@ const handleKeyDown = (e) => {
 
 onMounted(() => {
   window.addEventListener("keydown", handleKeyDown);
+  handleRouteScroll();
+
+  if (typeof IntersectionObserver !== "undefined") {
+    // Hero Observer
+    heroObserver = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          isHeroVisible.value = true;
+        }
+      },
+      { threshold: 0.1 }
+    );
+    if (heroSectionRef.value) {
+      heroObserver.observe(heroSectionRef.value);
+    }
+
+    // Section 2 Observers
+    const observeElement = (elRef, visibleRef) => {
+      if (!elRef.value) return;
+      const obs = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            visibleRef.value = true;
+          }
+        },
+        { threshold: 0.15 }
+      );
+      obs.observe(elRef.value);
+      section2Observers.push(obs);
+    };
+
+    observeElement(house1Ref, isHouse1Visible);
+    observeElement(house2Ref, isHouse2Visible);
+    observeElement(house3Ref, isHouse3Visible);
+  } else {
+    isHeroVisible.value = true;
+    isHouse1Visible.value = true;
+    isHouse2Visible.value = true;
+    isHouse3Visible.value = true;
+  }
 });
 
 onUnmounted(() => {
   window.removeEventListener("keydown", handleKeyDown);
+  if (heroObserver) {
+    heroObserver.disconnect();
+  }
+  section2Observers.forEach((obs) => obs.disconnect());
+  section2Observers = [];
   document.body.style.overflow = "";
 });
 </script>
 
 <template>
   <div
-    class="w-full flex flex-col items-center pb-28 font-['Inter',sans-serif] overflow-x-hidden"
+    class="w-full flex flex-col items-center pb-0 font-['Inter',sans-serif] overflow-x-hidden"
   >
-    <!-- 1. Hero Banner Card Section -->
+    <!-- 1. Hero Banner Card Section (Smooth left & right entrance animation) -->
     <section
+      ref="heroSectionRef"
       class="w-full flex justify-center pt-16 sm:pt-24 md:pt-28 lg:pt-36 pb-16 sm:pb-20 md:pb-24 px-4 sm:px-6 lg:px-8"
     >
       <!-- Responsive Fluid Banner -->
       <div
         class="relative w-full max-w-[1240px] flex flex-col lg:flex-row items-center justify-between bg-gradient-to-b lg:bg-gradient-to-r from-[#97c5f8] via-[#a2b5ca] to-[#ca9c76] rounded-none overflow-visible lg:h-[440px]"
       >
-        <!-- Typography -->
+        <!-- Typography: Smooth slide from left (slower cinematic entrance) -->
         <div
-          class="z-30 w-full lg:w-[54%] px-6 sm:px-10 lg:pl-16 pt-8 pb-4 lg:py-0 shrink-0"
+          :class="[
+            'z-30 w-full lg:w-[54%] px-6 sm:px-10 lg:pl-16 pt-8 pb-4 lg:py-0 shrink-0 transform transition-all duration-[2200ms] ease-[cubic-bezier(0.16,1,0.3,1)]',
+            isHeroVisible
+              ? 'opacity-100 translate-x-0'
+              : 'opacity-0 -translate-x-16 sm:-translate-x-24'
+          ]"
         >
           <p
-            class="text-[clamp(11px,1.4vw,14px)] text-neutral-800 font-medium tracking-wide mb-2 sm:mb-4 transition-all duration-300"
+            class="text-[clamp(11px,1.4vw,14px)] text-neutral-800 font-medium tracking-wide mb-2 sm:mb-4"
           >
             Crafting Tomorrow's Living Spaces:
           </p>
           <h1
-            class="text-[clamp(24px,3.8vw,48px)] font-normal leading-[1.14] text-neutral-900 tracking-tight font-['Newsreader',serif] transition-all duration-300"
+            class="text-[clamp(24px,3.8vw,48px)] font-normal leading-[1.14] text-neutral-900 tracking-tight font-['Newsreader',serif]"
           >
             Set New Standards<br />
             in Modern Home<br />
@@ -194,36 +300,46 @@ onUnmounted(() => {
           </h1>
         </div>
 
-        <!-- Architecture Building Image -->
+        <!-- Architecture Building Image: Ultra-smooth, slow scale from small to big while sliding from right -->
         <div
-          class="w-full lg:w-[46%] relative lg:absolute lg:right-0 lg:bottom-0 flex items-end justify-center lg:justify-end z-20 overflow-visible pt-2 lg:pt-0 pointer-events-none"
+          :class="[
+            'w-full lg:w-[46%] relative lg:absolute lg:right-0 lg:bottom-0 flex items-end justify-center lg:justify-end z-20 overflow-visible pt-2 lg:pt-0 pointer-events-none transform transition-all duration-[3600ms] ease-[cubic-bezier(0.16,1,0.3,1)] origin-bottom-right delay-100',
+            isHeroVisible
+              ? 'opacity-100 translate-x-0 scale-100'
+              : 'opacity-0 translate-x-16 sm:translate-x-24 scale-65 sm:scale-70'
+          ]"
         >
           <img
             :src="heroBuilding"
             alt="Modern Architecture"
-            class="h-auto max-h-[300px] sm:max-h-[360px] md:max-h-[420px] lg:max-h-none lg:h-[530px] w-auto max-w-[85%] sm:max-w-[70%] lg:max-w-none object-contain object-bottom select-none transition-all duration-300"
+            class="h-auto max-h-[300px] sm:max-h-[360px] md:max-h-[420px] lg:max-h-none lg:h-[530px] w-auto max-w-[85%] sm:max-w-[70%] lg:max-w-none object-contain object-bottom select-none"
           />
         </div>
       </div>
     </section>
 
     <!-- 2. "If you can dream it, we can build it." Showcase Section -->
-    <section class="w-full my-8 sm:my-12">
+    <section id="house-design" class="w-full my-8 sm:my-12 scroll-mt-24">
       <!-- Top Block: Heading & House 1 -->
-      <div class="w-full flex flex-col lg:flex-row items-start">
-        <!-- Text container -->
+      <div ref="house1Ref" class="w-full flex flex-col lg:flex-row items-start">
+        <!-- Text container (Slides smoothly from right) -->
         <div
-          class="w-full lg:order-2 flex justify-start px-6 sm:px-12 lg:pl-20 pt-2 lg:pt-4 mb-6 lg:mb-0"
+          :class="[
+            'w-full lg:order-2 flex justify-start px-6 sm:px-12 lg:pl-20 pt-2 lg:pt-4 mb-6 lg:mb-0 transform transition-all duration-[2200ms] ease-[cubic-bezier(0.16,1,0.3,1)]',
+            isHouse1Visible
+              ? 'opacity-100 translate-x-0'
+              : 'opacity-0 translate-x-12 sm:translate-x-16'
+          ]"
         >
           <div class="max-w-[490px]">
             <h2
-              class="text-[clamp(24px,3.5vw,44px)] font-normal leading-[1.15] text-neutral-900 tracking-tight font-['Newsreader',serif] mb-4 sm:mb-5 transition-all duration-300"
+              class="text-[clamp(24px,3.5vw,44px)] font-normal leading-[1.15] text-neutral-900 tracking-tight font-['Newsreader',serif] mb-4 sm:mb-5"
             >
               If you can dream it, we<br class="hidden sm:inline" />
               can build it.
             </h2>
             <p
-              class="text-[clamp(12px,1.3vw,14px)] leading-[1.7] text-neutral-600 font-normal font-['Rufina',serif] transition-all duration-300"
+              class="text-[clamp(12px,1.3vw,14px)] leading-[1.7] text-neutral-600 font-normal font-['Rufina',serif]"
             >
               We adapt a uniquely personalised perspective to each project to
               deliver stunning spaces of optimal function. Renowned for our
@@ -233,9 +349,14 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- House Image 1 -->
+        <!-- House Image 1 (Scale up from small & slide from left) -->
         <div
-          class="w-full lg:order-1 lg:w-[380px] xl:w-[420px] shrink-0 px-6 sm:px-12 lg:px-0"
+          :class="[
+            'w-full lg:order-1 lg:w-[380px] xl:w-[420px] shrink-0 px-6 sm:px-12 lg:px-0 transform transition-all duration-[2800ms] ease-[cubic-bezier(0.16,1,0.3,1)] origin-center',
+            isHouse1Visible
+              ? 'opacity-100 scale-100 translate-x-0'
+              : 'opacity-0 scale-70 -translate-x-12 sm:-translate-x-16'
+          ]"
         >
           <div
             class="w-full max-w-[420px] mx-auto lg:mx-0 aspect-square overflow-hidden bg-neutral-100"
@@ -243,7 +364,7 @@ onUnmounted(() => {
             <img
               :src="houseTopLeft"
               alt="Luxury modern villa design"
-              class="w-full h-full object-cover transition-all duration-300"
+              class="w-full h-full object-cover"
             />
           </div>
         </div>
@@ -253,19 +374,32 @@ onUnmounted(() => {
       <div class="w-full relative mt-12 sm:mt-16 lg:mt-[-40px]">
         <!-- Right House Image 2 -->
         <div
+          ref="house2Ref"
           class="w-full lg:w-[400px] xl:w-[440px] lg:ml-auto flex flex-col px-6 sm:px-12 lg:px-0 mb-12 sm:mb-16 lg:mb-0"
         >
+          <!-- Image 2 (Scale up from small & slide from right) -->
           <div
-            class="w-full max-w-[420px] mx-auto lg:mx-0 aspect-square overflow-hidden bg-neutral-100 mb-4 sm:mb-5"
+            :class="[
+              'w-full max-w-[420px] mx-auto lg:mx-0 aspect-square overflow-hidden bg-neutral-100 mb-4 sm:mb-5 transform transition-all duration-[2800ms] ease-[cubic-bezier(0.16,1,0.3,1)] origin-center',
+              isHouse2Visible
+                ? 'opacity-100 scale-100 translate-x-0'
+                : 'opacity-0 scale-70 translate-x-12 sm:translate-x-16'
+            ]"
           >
             <img
               :src="houseRight"
               alt="Evening illuminated architectural house"
-              class="w-full h-full object-cover transition-all duration-300"
+              class="w-full h-full object-cover"
             />
           </div>
+          <!-- Text 2 (Slide into view) -->
           <p
-            class="text-[clamp(12px,1.2vw,13px)] leading-[1.7] text-neutral-600 font-normal font-['Rufina',serif] max-w-[420px] mx-auto lg:mx-0 lg:pr-8 transition-all duration-300"
+            class="text-[clamp(12px,1.2vw,13px)] leading-[1.7] text-neutral-600 font-normal font-['Rufina',serif] max-w-[420px] mx-auto lg:mx-0 lg:pr-8 transform transition-all duration-[2200ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-100"
+            :class="[
+              isHouse2Visible
+                ? 'opacity-100 translate-x-0'
+                : 'opacity-0 translate-x-10'
+            ]"
           >
             We adapt a uniquely personalised perspective to each project to
             deliver stunning spaces of optimal function. Renowned for our
@@ -276,22 +410,35 @@ onUnmounted(() => {
 
         <!-- Lower-Left House Image 3 (Aligned with Section 3 container left edge) -->
         <div
+          ref="house3Ref"
           class="w-full max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 lg:mt-[-80px]"
         >
           <div
             class="flex flex-col w-full max-w-[420px] lg:w-[380px] xl:w-[420px]"
           >
+            <!-- Image 3 (Scale up from small & slide from left) -->
             <div
-              class="w-full aspect-square overflow-hidden bg-neutral-100 mb-4 sm:mb-5"
+              :class="[
+                'w-full aspect-square overflow-hidden bg-neutral-100 mb-4 sm:mb-5 transform transition-all duration-[2800ms] ease-[cubic-bezier(0.16,1,0.3,1)] origin-center',
+                isHouse3Visible
+                  ? 'opacity-100 scale-100 translate-x-0'
+                  : 'opacity-0 scale-70 -translate-x-12 sm:-translate-x-16'
+              ]"
             >
               <img
                 :src="houseBottomLeft"
                 alt="Contemporary multilevel residence"
-                class="w-full h-full object-cover transition-all duration-300"
+                class="w-full h-full object-cover"
               />
             </div>
+            <!-- Text 3 (Slide into view) -->
             <p
-              class="text-[clamp(12px,1.2vw,13px)] leading-[1.7] text-neutral-600 font-normal font-['Rufina',serif] transition-all duration-300"
+              class="text-[clamp(12px,1.2vw,13px)] leading-[1.7] text-neutral-600 font-normal font-['Rufina',serif] transform transition-all duration-[2200ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-100"
+              :class="[
+                isHouse3Visible
+                  ? 'opacity-100 translate-x-0'
+                  : 'opacity-0 -translate-x-10'
+              ]"
             >
               We adapt a uniquely personalised perspective to each project to
               deliver stunning spaces of optimal function. Renowned for our
@@ -346,7 +493,10 @@ onUnmounted(() => {
     </section>
 
     <!-- 4. Section 4: "Inclusion List" Section with 3 Grid Variations (Matching whole-page.png) -->
-    <section class="w-full max-w-[1240px] mt-24 sm:mt-32 px-4 sm:px-6 lg:px-8">
+    <section
+      id="inclusion-list"
+      class="w-full max-w-[1240px] mt-24 sm:mt-32 px-4 sm:px-6 lg:px-8 scroll-mt-24"
+    >
       <!-- Section Big Title: "Inclusion List" with clean underline accent -->
       <div class="mb-14 sm:mb-16">
         <h2
@@ -629,7 +779,7 @@ onUnmounted(() => {
     <!-- 5. Section 5: "About Us" Banner (Matching whole-page.png) -->
     <section
       id="about"
-      class="w-full max-w-[1240px] mt-24 sm:mt-32 px-4 sm:px-6 lg:px-8"
+      class="w-full max-w-[1240px] mt-24 sm:mt-32 px-4 sm:px-6 lg:px-8 scroll-mt-24"
     >
       <!-- Section Big Title: "About Us" with clean underline accent -->
       <div class="mb-14 sm:mb-16">
@@ -754,7 +904,7 @@ onUnmounted(() => {
     <!-- 7. Section 7: "Get in touch" Form (Matching whole-page.png) -->
     <section
       id="contact"
-      class="w-full max-w-[1240px] mt-24 sm:mt-32 px-4 sm:px-6 lg:px-8"
+      class="w-full max-w-[1240px] mt-24 sm:mt-32 px-4 sm:px-6 lg:px-8 scroll-mt-24"
     >
       <!-- Title -->
       <div class="mb-10 sm:mb-12">
@@ -805,41 +955,68 @@ onUnmounted(() => {
         <div class="pt-2">
           <button
             type="submit"
-            class="px-8 py-3 bg-black text-white text-[12px] sm:text-[13px] font-medium hover:bg-neutral-800 transition-colors shadow-sm cursor-pointer select-none rounded-none"
+            :class="[
+              'group relative px-9 py-3 bg-black text-white text-[12px] sm:text-[13px] font-medium transition-all duration-300 shadow-sm cursor-pointer select-none rounded-none inline-flex items-center gap-2.5 hover:bg-neutral-800 hover:shadow-md active:scale-95',
+              isSubmitting ? 'scale-95 bg-neutral-800' : ''
+            ]"
           >
-            Get in touch
+            <span class="tracking-wide">Send</span>
+            <!-- Paper plane icon -->
+            <svg
+              :class="[
+                'w-3.5 h-3.5 transition-opacity duration-300',
+                isSubmitting ? 'opacity-0' : 'opacity-100'
+              ]"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
+              />
+            </svg>
           </button>
         </div>
       </form>
     </section>
 
-    <!-- 8. Section 8: Footer (Matching whole-page.png) -->
+    <!-- 8. Section 8: Footer (Matching whole-page.png & screenshot) -->
     <footer
-      class="relative w-full mt-24 sm:mt-32 overflow-hidden text-white min-h-[420px] flex items-center justify-center rounded-none"
+      class="relative w-full mt-24 sm:mt-32 overflow-hidden text-white min-h-[440px] sm:min-h-[480px] flex items-center justify-center rounded-none"
     >
-      <!-- Background House - using bg-img.png only -->
+      <!-- Background House - using bg-img.png -->
       <img
         :src="bigHouseBg"
         alt="Footer Modern Villa"
         class="absolute inset-0 w-full h-full object-cover object-center select-none"
       />
+      <!-- Top gradient overlay for text readability matching screenshot -->
+      <div
+        class="absolute inset-0 bg-gradient-to-b from-black/85 via-black/50 to-transparent pointer-events-none"
+      ></div>
 
       <!-- Footer Content Container -->
       <div
-        class="relative z-10 w-full max-w-[1240px] px-6 sm:px-10 lg:px-12 py-16 grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-16 items-start drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]"
+        class="relative z-10 w-full max-w-[1240px] px-6 sm:px-10 lg:px-12 py-16 sm:py-20 grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-16 items-start"
       >
         <!-- Column 1: Brand Logo & Social Icons -->
         <div class="md:col-span-5 flex flex-col items-start">
-          <h2
-            class="text-3xl sm:text-4xl font-normal tracking-tight font-['Bodoni_Moda',serif] italic mb-8"
+          <button
+            type="button"
+            @click="scrollToTop"
+            class="text-3xl sm:text-4xl lg:text-[42px] font-normal tracking-tight font-['Bodoni_Moda',serif] italic mb-10 text-white hover:opacity-80 transition-opacity cursor-pointer text-left bg-transparent border-none p-0 select-none"
+            aria-label="Scroll to top"
           >
             RealestateToyal
-          </h2>
-          <!-- Social Icons -->
+          </button>
+          <!-- Social & Contact Icons -->
           <div class="flex items-center gap-4">
             <!-- LinkedIn -->
             <a
-              href="https://linkedin.com"
+              href="https://www.linkedin.com/in/has-bunroeun-b48761373"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="LinkedIn"
@@ -865,18 +1042,30 @@ onUnmounted(() => {
                 />
               </svg>
             </a>
+            <!-- Email Direct Contact -->
+            <a
+              href="mailto:bunroeunhas@gmail.com"
+              aria-label="Email"
+              class="w-8 h-8 rounded-full bg-[#EA4335] flex items-center justify-center text-white hover:opacity-90 transition-opacity"
+            >
+              <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <path
+                  d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"
+                />
+              </svg>
+            </a>
           </div>
         </div>
 
         <!-- Column 2: Navigation Links -->
         <div class="md:col-span-3 flex flex-col items-start">
           <h3
-            class="text-xl sm:text-2xl font-normal tracking-tight font-['Newsreader',serif] mb-4 text-white"
+            class="text-xl sm:text-2xl font-normal tracking-tight font-['Newsreader',serif] italic mb-4 text-white"
           >
             Navigation
           </h3>
           <ul
-            class="flex flex-col gap-2.5 text-sm text-neutral-300 font-['Inter',sans-serif]"
+            class="flex flex-col gap-2.5 text-sm text-neutral-200 font-['Inter',sans-serif]"
           >
             <li>
               <RouterLink to="/" class="hover:text-white transition-colors">
@@ -913,30 +1102,30 @@ onUnmounted(() => {
         <!-- Column 3: Newsletter Signup -->
         <div class="md:col-span-4 flex flex-col items-start">
           <h3
-            class="text-xl sm:text-2xl font-normal tracking-tight font-['Newsreader',serif] mb-3 text-white"
+            class="text-xl sm:text-2xl font-normal tracking-tight font-['Newsreader',serif] italic mb-3 text-white"
           >
             Newsletter Signup
           </h3>
           <p
-            class="text-xs text-neutral-400 mb-4 leading-relaxed font-['Inter',sans-serif]"
+            class="text-xs text-neutral-300 mb-4 leading-relaxed font-['Inter',sans-serif]"
           >
-            Sign up for email address to solo matlins.and nowe more.
+            Sign up for email address to solo matlins,and nowe more.
           </p>
           <!-- Email Input + Subscribe Button inline -->
           <form
             @submit.prevent="submitNewsletter"
-            class="w-full flex items-center bg-black/60 border border-neutral-600 rounded-none overflow-hidden"
+            class="w-full flex items-center bg-black/40 border border-neutral-400 rounded-none overflow-hidden"
           >
             <input
               v-model="newsletterEmail"
               type="email"
               placeholder="Email..."
               required
-              class="w-full bg-transparent px-3.5 py-2.5 text-xs text-white placeholder:text-neutral-500 focus:outline-none rounded-none"
+              class="w-full bg-transparent px-3.5 py-2.5 text-xs text-white placeholder:text-neutral-400 focus:outline-none rounded-none"
             />
             <button
               type="submit"
-              class="px-5 py-2.5 bg-neutral-200 text-neutral-900 text-xs font-medium hover:bg-white transition-colors cursor-pointer shrink-0 rounded-none"
+              class="px-5 py-2.5 bg-[#d4d4d8] text-neutral-900 text-xs font-medium hover:bg-white transition-colors cursor-pointer shrink-0 rounded-none"
             >
               Subscribe
             </button>
@@ -944,6 +1133,13 @@ onUnmounted(() => {
         </div>
       </div>
     </footer>
+
+    <!-- White Bottom Copyright Bar -->
+    <div
+      class="w-full bg-white text-neutral-900 py-4 sm:py-5 flex items-center justify-center text-xs tracking-wider border-t border-neutral-200 font-['Inter',sans-serif]"
+    >
+      <p>Copyright © 2026 RealestateToyal. All rights reserved.</p>
+    </div>
     <Teleport to="body">
       <Transition name="lightbox-fade">
         <div
