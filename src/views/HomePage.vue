@@ -656,8 +656,8 @@ onUnmounted(() => {
 
       <!-- Asymmetrical 3-Column Image Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
-        <!-- Left Column: 2 Stacked Square Photos -->
-        <div class="lg:col-span-4 flex flex-col gap-6 sm:gap-8">
+        <!-- Left Column: 2 Stacked Photos (Top normal, bottom smaller) -->
+        <div class="lg:col-span-4 flex flex-col gap-6 sm:gap-8 items-start">
           <div
             class="w-full aspect-square overflow-hidden bg-neutral-100 rounded-none"
           >
@@ -667,8 +667,9 @@ onUnmounted(() => {
               class="w-full h-full object-cover hover:scale-105 transition-transform duration-500 rounded-none"
             />
           </div>
+          <!-- Bottom Left: Smaller Photo with subtle x-gap -->
           <div
-            class="w-full aspect-square overflow-hidden bg-neutral-100 rounded-none"
+            class="w-[92%] sm:w-[90%] aspect-square overflow-hidden bg-neutral-100 rounded-none"
           >
             <img
               :src="houseTopLeft"
@@ -764,7 +765,7 @@ onUnmounted(() => {
             type="submit"
             class="px-8 py-3 bg-black text-white text-[12px] sm:text-[13px] font-medium hover:bg-neutral-800 transition-colors shadow-sm cursor-pointer select-none rounded-none"
           >
-            Inclusion List
+            Get in touch
           </button>
         </div>
       </form>
