@@ -21,9 +21,15 @@ const scrollToTop = () => {
 };
 
 const handleRouteScroll = () => {
+  const path = route.path;
+  const hash = route.hash;
+  if (path === "/" && !hash) {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    return;
+  }
   nextTick(() => {
-    const path = route.path;
-    const hash = route.hash;
     if (hash) {
       scrollToSection(hash.replace("#", ""));
     } else if (path === "/house-design") {
@@ -242,7 +248,16 @@ const handleKeyDown = (e) => {
 
 onMounted(() => {
   window.addEventListener("keydown", handleKeyDown);
-  handleRouteScroll();
+  if (route.path === "/" && !route.hash) {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    requestAnimationFrame(() => {
+      window.scrollTo(0, 0);
+    });
+  } else {
+    handleRouteScroll();
+  }
 
   if (typeof IntersectionObserver !== "undefined") {
     // Hero Observer
