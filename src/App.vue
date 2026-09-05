@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 import { RouterView } from "vue-router";
-// import Navbar from "./components/Navigation/Navbar.vue";
+import Navbar from "./components/navigation/Navbar.vue";
 
 const showScrollTop = ref(false);
 
@@ -69,4 +69,3 @@ onUnmounted(() => {
     </Transition>
   </div>
 </template>
-
